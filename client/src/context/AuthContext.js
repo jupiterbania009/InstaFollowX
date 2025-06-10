@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initializeAuth = async () => {
+            setIsLoading(true);
             const token = localStorage.getItem('token');
             
             if (token) {
@@ -28,15 +29,26 @@ export const AuthProvider = ({ children }) => {
                     setIsAuthenticated(false);
                     setUser(null);
                 }
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
             }
             
             setIsLoading(false);
         };
 
         initializeAuth();
+
+        // Cleanup function
+        return () => {
+            setIsLoading(true);
+            setIsAuthenticated(false);
+            setUser(null);
+        };
     }, []);
 
     const login = async (email, password) => {
+        setIsLoading(true);
         try {
             const response = await axios.post('/api/auth/login', { email, password });
             const { token, user } = response.data;
@@ -54,14 +66,18 @@ export const AuthProvider = ({ children }) => {
                 success: false,
                 error: error.response?.data?.message || 'An error occurred during login'
             };
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const logout = () => {
+        setIsLoading(true);
         localStorage.removeItem('token');
         delete axios.defaults.headers.common['Authorization'];
         setIsAuthenticated(false);
         setUser(null);
+        setIsLoading(false);
     };
 
     const value = {
@@ -71,6 +87,14 @@ export const AuthProvider = ({ children }) => {
         login,
         logout
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-900">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={value}>

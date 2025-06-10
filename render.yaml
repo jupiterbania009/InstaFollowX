@@ -3,8 +3,8 @@ services:
   - type: web
     name: instafollowx
     env: node
-    buildCommand: npm install
-    startCommand: npm run start-server
+    buildCommand: cd server && npm install
+    startCommand: cd server && node server.js
     staticPublishPath: ./client
     healthCheckPath: /health
     numInstances: 1

@@ -1,62 +1,38 @@
 const mongoose = require('mongoose');
 
 const followSchema = new mongoose.Schema({
-    userId: {
+    follower: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    instagramUsername: {
+    targetUsername: {
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        enum: ['pending', 'completed', 'verified', 'failed'],
+        default: 'pending'
+    },
     points: {
         type: Number,
-        default: 0
+        default: 1
     },
-    followsGiven: [{
-        targetUser: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        instagramUsername: String,
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        verified: {
-            type: Boolean,
-            default: false
-        }
-    }],
-    followsReceived: [{
-        fromUser: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        instagramUsername: String,
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        verified: {
-            type: Boolean,
-            default: false
-        }
-    }],
-    queuePosition: {
-        type: Number,
-        default: 0
+    verificationCode: {
+        type: String,
+        required: true
     },
-    lastFollowGiven: {
+    createdAt: {
         type: Date,
-        default: null
-    },
-    lastFollowReceived: {
-        type: Date,
-        default: null
+        default: Date.now,
+        expires: 86400 // Document will be automatically deleted after 24 hours if not verified
     }
 });
+
+// Index for efficient queries
+followSchema.index({ follower: 1, status: 1 });
+followSchema.index({ targetUsername: 1, status: 1 });
 
 // Update points when follows are verified
 followSchema.methods.updatePoints = function() {

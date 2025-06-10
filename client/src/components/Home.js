@@ -1,33 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, isLoading } = useAuth();
-
-    const handleGetStarted = () => {
-        if (isAuthenticated) {
-            navigate('/dashboard');
-        } else {
-            navigate('/login');
-        }
-    };
-
-    // Show loading spinner while authentication state is being determined
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-            </div>
-        );
-    }
-
-    // If user is already authenticated, redirect to dashboard immediately
-    if (isAuthenticated) {
-        navigate('/dashboard');
-        return null;
-    }
 
     return (
         <div className="max-w-4xl mx-auto text-center py-16">
@@ -42,7 +17,7 @@ const Home = () => {
 
             <div className="space-y-4">
                 <button
-                    onClick={handleGetStarted}
+                    onClick={() => navigate('/login')}
                     className="px-8 py-4 bg-purple-600 text-white rounded-lg text-xl font-semibold hover:bg-purple-700 transition-colors"
                 >
                     Get Started Now

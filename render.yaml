@@ -1,0 +1,19 @@
+services:
+  # Combined Frontend and Backend Service
+  - type: web
+    name: instafollowx
+    env: node
+    buildCommand: npm install
+    startCommand: npm run start-server
+    staticPublishPath: ./client
+    envVars:
+      - key: MONGODB_URI
+        value: "mongodb+srv://jupiter009:%4077861822AaRohanBania009@cluster0.kie5d8x.mongodb.net/instafollowx?retryWrites=true&w=majority"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_USER
+        value: "www.rohanbania009@gmail.com"
+      - key: EMAIL_PASSWORD
+        value: "gflbbmfxkholkavz"
+      - key: PORT
+        value: 10000

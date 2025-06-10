@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaFollowX - Follow-for-Follow Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🔄</div>
+        <h1>InstaFollowX</h1>
+      </div>
+      
+      <nav>
+        <ul>
+          <li><a href="#" class="active" id="dashboardLink">Dashboard</a></li>
+          <li><a href="#" id="leaderboardLink">Leaderboard</a></li>
+          <li><a href="#" id="howItWorksLink">How It Works</a></li>
+        </ul>
+      </nav>
+      
+      <div class="auth-buttons">
+        <button class="btn btn-primary" id="loginBtn">Login</button>
+        <button class="btn btn-secondary" id="registerBtn">Register</button>
+        <button class="btn btn-logout" id="logoutBtn" style="display:none;">Logout</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>Grow Your Instagram Following</h2>
+      <p>Exchange follows with real users and grow your Instagram presence. Earn points for following others and get followers in return!</p>
+      <button class="btn btn-primary" id="getStartedBtn">Get Started Now</button>
+    </section>
+
+    <section class="dashboard" id="mainContent">
+      <div class="dashboard-header">
+        <h2>Welcome to InstaFollowX</h2>
+        <div class="points">🪙 Grow Your Following</div>
+      </div>
+      
+      <div class="stats">
+        <div class="stat-card">
+          <h3>1</h3>
+          <p>Follow = 1 Point</p>
+        </div>
+        <div class="stat-card">
+          <h3>1</h3>
+          <p>Point = 1 Follower</p>
+        </div>
+        <div class="stat-card">
+          <h3>10</h3>
+          <p>Daily Follow Limit</p>
+        </div>
+        <div class="stat-card">
+          <h3>∞</h3>
+          <p>Growth Potential</p>
+        </div>
+      </div>
+      
+      <div class="queue">
+        <div class="queue-header">
+          <h3>🔥 How It Works</h3>
+        </div>
+        
+        <div class="user-list">
+          <div class="user-card">
+            <div class="user-avatar">1️⃣</div>
+            <h4>Create Account</h4>
+            <p>Sign up with email or username</p>
+          </div>
+          
+          <div class="user-card">
+            <div class="user-avatar">2️⃣</div>
+            <h4>Follow Users</h4>
+            <p>Earn 1 point for each follow</p>
+          </div>
+          
+          <div class="user-card">
+            <div class="user-avatar">3️⃣</div>
+            <h4>Get Followers</h4>
+            <p>Users follow you in return</p>
+          </div>
+          
+          <div class="user-card">
+            <div class="user-avatar">4️⃣</div>
+            <h4>Grow Your Account</h4>
+            <p>Increase your Instagram presence</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="leaderboard">
+        <div class="queue-header">
+          <h3>🏆 Why Choose Us</h3>
+        </div>
+        <div class="leaderboard-list">
+          <div class="leaderboard-item">
+            <div>
+              <span class="rank">✓</span>
+              <span>Email or Username Login</span>
+            </div>
+          </div>
+          <div class="leaderboard-item">
+            <div>
+              <span class="rank">✓</span>
+              <span>Secure Authentication</span>
+            </div>
+          </div>
+          <div class="leaderboard-item">
+            <div>
+              <span class="rank">✓</span>
+              <span>Daily Follow Limits</span>
+            </div>
+          </div>
+          <div class="leaderboard-item">
+            <div>
+              <span class="rank">✓</span>
+              <span>Real Instagram Growth</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2023 InstaFollowX. All rights reserved.</p>
+      <p>Follow-for-Follow Platform | Grow Your Instagram Following</p>
+    </footer>
+  </div>
+
+  <!-- Login Modal with Email Support -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 style="margin-bottom: 20px;">Login to Your Account</h2>
+      
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="emailLogin">Email Login</div>
+        <div class="auth-tab" data-tab="usernameLogin">Username Login</div>
+      </div>
+      
+      <div id="loginMessage" class="message"></div>
+      
+      <!-- Email Login Form -->
+      <div id="emailLoginForm" class="auth-form active">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password">
+        </div>
+        
+        <button class="btn btn-primary" style="width: 100%;" id="doEmailLogin">Login with Email</button>
+      </div>
+      
+      <!-- Username Login Form -->
+      <div id="usernameLoginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter your username">
+        </div>
+        
+        <div class="form-group">
+          <label for="loginPasswordUsername">Password</label>
+          <input type="password" id="loginPasswordUsername" placeholder="Enter your password">
+        </div>
+        
+        <button class="btn btn-primary" style="width: 100%;" id="doUsernameLogin">Login with Username</button>
+      </div>
+      
+      <p style="text-align: center; margin-top: 20px;">
+        Don't have an account? <a href="#" style="color: var(--primary);" id="switchToRegister">Register</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Register Modal with Email Support -->
+  <div class="modal" id="registerModal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2 style="margin-bottom: 20px;">Create Account</h2>
+      
+      <div id="registerMessage" class="message"></div>
+      
+      <div class="form-group">
+        <label for="registerUsername">Choose Username</label>
+        <input type="text" id="registerUsername" placeholder="Enter a username">
+      </div>
+      
+      <div class="form-group">
+        <label for="registerEmail">Email Address</label>
+        <input type="email" id="registerEmail" placeholder="Enter your email">
+      </div>
+      
+      <div class="form-group">
+        <label for="registerPassword">Create Password</label>
+        <input type="password" id="registerPassword" placeholder="Create a strong password">
+      </div>
+      
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm your password">
+      </div>
+      
+      <button class="btn btn-primary" style="width: 100%;" id="doRegister">Create Account</button>
+      
+      <p style="text-align: center; margin-top: 20px;">
+        Already have an account? <a href="#" style="color: var(--primary);" id="switchToLogin">Login</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

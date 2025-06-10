@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-const Navigation = ({ isAuthenticated, setIsAuthenticated }) => {
+const Navigation = () => {
     const navigate = useNavigate();
+    const { isAuthenticated, logout, user } = useAuth();
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
+        logout();
         navigate('/');
     };
 
@@ -21,6 +22,9 @@ const Navigation = ({ isAuthenticated, setIsAuthenticated }) => {
                 <div className="flex items-center space-x-4">
                     {isAuthenticated ? (
                         <>
+                            <span className="text-gray-300">
+                                Welcome, {user?.username || 'User'}
+                            </span>
                             <Link 
                                 to="/dashboard" 
                                 className="text-white hover:text-purple-400"

@@ -53,10 +53,18 @@ app.use('/api/follow', followRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/build')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-    });
+    // Set static folder
+    const clientBuildPath = path.join(__dirname, '../client/build');
+    
+    // Check if the build directory exists
+    if (require('fs').existsSync(clientBuildPath)) {
+        app.use(express.static(clientBuildPath));
+        app.get('*', (req, res) => {
+            res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+        });
+    } else {
+        console.warn('Production build directory not found. Make sure to run "npm run build" in the client directory.');
+    }
 }
 
 // Error handling middleware
@@ -86,7 +94,7 @@ let server;
 
 const startServer = () => {
     server = app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
         console.log('Environment:', process.env.NODE_ENV);
         console.log('Email configured for:', process.env.EMAIL_USER);
     });

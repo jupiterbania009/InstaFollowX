@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import axios from '../utils/axios';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -18,15 +18,16 @@ const Dashboard = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
+            setError('');
             const [statsRes, queueRes] = await Promise.all([
-                axios.get('/api/follow/stats'),
-                axios.get('/api/follow/queue')
+                axios.get('/follow/stats'),
+                axios.get('/follow/queue')
             ]);
             setStats(statsRes.data);
             setFollowQueue(queueRes.data);
         } catch (error) {
-            setError('Error fetching dashboard data');
             console.error('Dashboard error:', error);
+            setError(error.response?.data?.message || 'Error fetching dashboard data');
         } finally {
             setLoading(false);
         }
@@ -36,13 +37,15 @@ const Dashboard = () => {
         e.preventDefault();
         try {
             setLoading(true);
-            const response = await axios.post('/api/follow/request', {
+            setError('');
+            const response = await axios.post('/follow/request', {
                 instagramUsername
             });
             setVerificationCode(response.data.verificationCode);
             await fetchData(); // Refresh data
             setInstagramUsername('');
         } catch (error) {
+            console.error('Request follow error:', error);
             setError(error.response?.data?.message || 'Error requesting follow');
         } finally {
             setLoading(false);
@@ -52,12 +55,15 @@ const Dashboard = () => {
     const handleVerifyFollow = async (followId, code) => {
         try {
             setLoading(true);
-            await axios.post('/api/follow/verify', {
+            setError('');
+            await axios.post('/follow/verify', {
                 followId,
                 verificationCode: code
             });
             await fetchData(); // Refresh data
+            setVerificationCode('');
         } catch (error) {
+            console.error('Verify follow error:', error);
             setError(error.response?.data?.message || 'Error verifying follow');
         } finally {
             setLoading(false);

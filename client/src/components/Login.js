@@ -1,190 +1,111 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
-const Login = ({ setIsAuthenticated }) => {
-    const [isEmailLogin, setIsEmailLogin] = useState(true);
+const Login = () => {
+    const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
-        username: '',
-        password: '',
-        otp: ''
+        password: ''
     });
     const [error, setError] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
-    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+        setError('');
     };
 
-    const handleUsernameLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const response = await axios.post('/api/auth/login', {
-                username: formData.username,
-                password: formData.password
-            });
+        setIsLoading(true);
+        setError('');
 
-            localStorage.setItem('token', response.data.token);
-            setIsAuthenticated(true);
+        const result = await login(formData.email, formData.password);
+        
+        if (result.success) {
             navigate('/dashboard');
-        } catch (error) {
-            setError(error.response?.data?.message || 'An error occurred');
+        } else {
+            setError(result.error);
         }
-    };
-
-    const handleRequestOTP = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('/api/auth/request-otp', {
-                email: formData.email,
-                password: formData.password
-            });
-            setOtpSent(true);
-            setError('');
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to send OTP');
-        }
-    };
-
-    const handleVerifyOTP = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('/api/auth/verify-otp', {
-                email: formData.email,
-                otp: formData.otp
-            });
-
-            localStorage.setItem('token', response.data.token);
-            setIsAuthenticated(true);
-            navigate('/dashboard');
-        } catch (error) {
-            setError(error.response?.data?.message || 'Invalid OTP');
-        }
+        
+        setIsLoading(false);
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900">
-            <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white">Login to Your Account</h2>
+        <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">
+                Login to InstaFollowX
+            </h2>
+            
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {error}
                 </div>
+            )}
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {error}
-                    </div>
-                )}
-
-                <div className="flex mb-6">
-                    <button
-                        className={`flex-1 py-2 ${isEmailLogin ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-400'}`}
-                        onClick={() => setIsEmailLogin(true)}
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                    <label 
+                        htmlFor="email" 
+                        className="block text-sm font-medium text-gray-700"
                     >
-                        Email Login
-                    </button>
-                    <button
-                        className={`flex-1 py-2 ${!isEmailLogin ? 'text-purple-500 border-b-2 border-purple-500' : 'text-gray-400'}`}
-                        onClick={() => setIsEmailLogin(false)}
+                        Email
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    />
+                </div>
+
+                <div>
+                    <label 
+                        htmlFor="password" 
+                        className="block text-sm font-medium text-gray-700"
                     >
-                        Username Login
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                        isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                >
+                    {isLoading ? 'Logging in...' : 'Login'}
+                </button>
+            </form>
+
+            <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">
+                    Don't have an account?{' '}
+                    <button
+                        onClick={() => navigate('/register')}
+                        className="text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                        Register here
                     </button>
-                </div>
-
-                {isEmailLogin ? (
-                    <form onSubmit={otpSent ? handleVerifyOTP : handleRequestOTP}>
-                        <div className="mb-4">
-                            <label className="block text-gray-300 mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                required
-                            />
-                        </div>
-                        {!otpSent && (
-                            <div className="mb-6">
-                                <label className="block text-gray-300 mb-2">Password</label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    required
-                                />
-                            </div>
-                        )}
-                        {otpSent && (
-                            <div className="mb-6">
-                                <label className="block text-gray-300 mb-2">Enter OTP</label>
-                                <input
-                                    type="text"
-                                    name="otp"
-                                    value={formData.otp}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    required
-                                />
-                            </div>
-                        )}
-                        <button
-                            type="submit"
-                            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                        >
-                            {otpSent ? 'Verify OTP' : 'Request OTP'}
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleUsernameLogin}>
-                        <div className="mb-4">
-                            <label className="block text-gray-300 mb-2">Username</label>
-                            <input
-                                type="text"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                required
-                            />
-                        </div>
-                        <div className="mb-6">
-                            <label className="block text-gray-300 mb-2">Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                        >
-                            Login
-                        </button>
-                    </form>
-                )}
-
-                <div className="mt-6 text-center">
-                    <p className="text-gray-400">
-                        Don't have an account?{' '}
-                        <button
-                            onClick={() => navigate('/register')}
-                            className="text-purple-500 hover:text-purple-400"
-                        >
-                            Register
-                        </button>
-                    </p>
-                </div>
+                </p>
             </div>
         </div>
     );

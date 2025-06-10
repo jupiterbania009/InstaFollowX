@@ -4,6 +4,10 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+const authRoutes = require('./routes/authRoutes');
+const followRoutes = require('./routes/followRoutes');
+const { errorHandler } = require('./middleware/errorMiddleware');
+
 const app = express();
 
 // Trust proxy - required for rate limiting behind reverse proxies (like on Render)
@@ -38,36 +42,32 @@ if (missingEnvVars.length > 0) {
     process.exit(1);
 }
 
-// Connect to MongoDB with retry logic
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000,
-            connectTimeoutMS: 10000
-        });
-        console.log('Connected to MongoDB');
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
-        // Retry connection after 5 seconds
-        setTimeout(connectDB, 5000);
-    }
-};
-
 // Connect to MongoDB
-connectDB();
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/follow', require('./routes/follow'));
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/follow', followRoutes);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/build')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+    });
+}
 
 // Error handling middleware
+app.use(errorHandler);
+
+// Global error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Global error:', err);
     res.status(500).json({
-        message: 'Something broke!',
-        error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
 
@@ -81,20 +81,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Serve static files from the client directory
-app.use(express.static(path.join(__dirname, '../client')));
-
-// Serve index.html for all other routes (for client-side routing)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/index.html'));
-});
-
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 let server;
 
 const startServer = () => {
     server = app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+        console.log(`Server running on port ${PORT}`);
         console.log('Environment:', process.env.NODE_ENV);
         console.log('Email configured for:', process.env.EMAIL_USER);
     });

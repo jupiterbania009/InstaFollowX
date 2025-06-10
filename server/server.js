@@ -60,6 +60,7 @@ connectDB();
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/follow', require('./routes/follow'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -32,7 +32,8 @@ const connectDB = async () => {
         await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of 30s
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 10000
         });
         console.log('Connected to MongoDB');
     } catch (err) {
@@ -42,13 +43,8 @@ const connectDB = async () => {
     }
 };
 
+// Connect to MongoDB
 connectDB();
-
-// Monitor MongoDB connection
-mongoose.connection.on('disconnected', () => {
-    console.log('MongoDB disconnected! Attempting to reconnect...');
-    connectDB();
-});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -65,8 +61,8 @@ app.use((err, req, res, next) => {
 // Rate limiting for all routes
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100
 });
 app.use(limiter);
 
@@ -79,33 +75,40 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+let server;
+
+const startServer = () => {
+    server = app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+};
+
+// Start server after MongoDB connects
+mongoose.connection.once('connected', () => {
+    startServer();
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received: closing HTTP server');
-    server.close(() => {
-        console.log('HTTP server closed');
-        mongoose.connection.close(false, () => {
-            console.log('MongoDB connection closed');
-            process.exit(0);
-        });
-    });
-});
+const shutdown = async () => {
+    console.log('Shutting down gracefully...');
+    if (server) {
+        server.close();
+    }
+    try {
+        await mongoose.connection.close();
+        console.log('MongoDB connection closed');
+        process.exit(0);
+    } catch (err) {
+        console.error('Error during shutdown:', err);
+        process.exit(1);
+    }
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', async (err) => {
     console.error('Uncaught Exception:', err);
-    // Attempt graceful shutdown
-    server.close(() => {
-        mongoose.connection.close(false, () => {
-            process.exit(1);
-        });
-    });
-    // If graceful shutdown fails, force exit after 1 second
-    setTimeout(() => {
-        process.exit(1);
-    }, 1000);
+    await shutdown();
 });

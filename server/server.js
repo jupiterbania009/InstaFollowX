@@ -6,6 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Trust proxy - required for rate limiting behind reverse proxies (like on Render)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -25,6 +28,15 @@ app.get('/health', (req, res) => {
         res.status(503).send();
     }
 });
+
+// Verify required environment variables
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASSWORD'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+    console.error('Missing required environment variables:', missingEnvVars);
+    process.exit(1);
+}
 
 // Connect to MongoDB with retry logic
 const connectDB = async () => {
@@ -62,7 +74,9 @@ app.use((err, req, res, next) => {
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false
 });
 app.use(limiter);
 
@@ -80,6 +94,8 @@ let server;
 const startServer = () => {
     server = app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
+        console.log('Environment:', process.env.NODE_ENV);
+        console.log('Email configured for:', process.env.EMAIL_USER);
     });
 };
 

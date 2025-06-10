@@ -45,20 +45,14 @@ const PublicRoute = ({ children }) => {
 };
 
 const AppContent = () => {
-    const { isAuthenticated } = useAuth();
-
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-900">
             <Navigation />
             <div className="container mx-auto px-4 py-8">
                 <Routes>
                     <Route 
                         path="/" 
-                        element={
-                            <Home 
-                                isAuthenticated={isAuthenticated}
-                            />
-                        } 
+                        element={<Home />} 
                     />
                     <Route
                         path="/login"

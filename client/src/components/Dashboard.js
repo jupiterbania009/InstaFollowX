@@ -1,147 +1,164 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [followQueue, setFollowQueue] = useState([]);
-    const [instagramUsername, setInstagramUsername] = useState('');
-    const [isInitialized, setIsInitialized] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    const token = localStorage.getItem('token');
+    const [instagramUsername, setInstagramUsername] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
 
     useEffect(() => {
-        if (token) {
-            fetchStats();
-            fetchFollowQueue();
-        }
-    }, [token]);
+        fetchData();
+    }, []);
 
-    const fetchStats = async () => {
+    const fetchData = async () => {
         try {
-            const response = await axios.get('/api/follow/stats', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setStats(response.data);
+            setLoading(true);
+            const [statsRes, queueRes] = await Promise.all([
+                axios.get('/api/follow/stats'),
+                axios.get('/api/follow/queue')
+            ]);
+            setStats(statsRes.data);
+            setFollowQueue(queueRes.data);
         } catch (error) {
-            console.error('Error fetching stats:', error);
-            setError('Failed to load statistics');
+            setError('Error fetching dashboard data');
+            console.error('Dashboard error:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const fetchFollowQueue = async () => {
-        try {
-            const response = await axios.get('/api/follow/queue', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setFollowQueue(response.data);
-        } catch (error) {
-            console.error('Error fetching follow queue:', error);
-            setError('Failed to load follow queue');
-        }
-    };
-
-    const initializeProfile = async (e) => {
+    const handleRequestFollow = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/follow/init', 
-                { instagramUsername },
-                { headers: { Authorization: `Bearer ${token}` }}
-            );
-            setIsInitialized(true);
-            fetchStats();
-            fetchFollowQueue();
+            setLoading(true);
+            const response = await axios.post('/api/follow/request', {
+                instagramUsername
+            });
+            setVerificationCode(response.data.verificationCode);
+            await fetchData(); // Refresh data
+            setInstagramUsername('');
         } catch (error) {
-            console.error('Error initializing profile:', error);
-            setError('Failed to initialize profile');
+            setError(error.response?.data?.message || 'Error requesting follow');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const recordFollow = async (targetUserId, targetInstagramUsername) => {
+    const handleVerifyFollow = async (followId, code) => {
         try {
-            await axios.post('/api/follow/record',
-                { targetUserId, targetInstagramUsername },
-                { headers: { Authorization: `Bearer ${token}` }}
-            );
-            fetchStats();
-            fetchFollowQueue();
+            setLoading(true);
+            await axios.post('/api/follow/verify', {
+                followId,
+                verificationCode: code
+            });
+            await fetchData(); // Refresh data
         } catch (error) {
-            console.error('Error recording follow:', error);
-            setError('Failed to record follow');
+            setError(error.response?.data?.message || 'Error verifying follow');
+        } finally {
+            setLoading(false);
         }
     };
 
-    if (!isInitialized) {
+    if (loading && !stats) {
         return (
-            <div className="container mx-auto p-4">
-                <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-2xl font-bold mb-4 text-purple-600">Initialize Your Profile</h2>
-                    <form onSubmit={initializeProfile}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Instagram Username</label>
-                            <input
-                                type="text"
-                                value={instagramUsername}
-                                onChange={(e) => setInstagramUsername(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                        >
-                            Start Growing
-                        </button>
-                    </form>
-                </div>
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="max-w-6xl mx-auto">
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                     {error}
                 </div>
             )}
-            
+
             {/* Stats Section */}
-            {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-semibold mb-2">Your Points</h3>
-                        <p className="text-3xl font-bold text-purple-600">{stats.points}</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-semibold mb-2">Follows Given</h3>
-                        <p className="text-3xl font-bold text-purple-600">{stats.followsGiven}</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-semibold mb-2">Follows Received</h3>
-                        <p className="text-3xl font-bold text-purple-600">{stats.followsReceived}</p>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-gray-800 p-6 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-300 mb-2">Points</h3>
+                    <p className="text-3xl font-bold text-purple-500">{stats?.points || 0}</p>
                 </div>
-            )}
+                <div className="bg-gray-800 p-6 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-300 mb-2">Follows Given</h3>
+                    <p className="text-3xl font-bold text-green-500">{stats?.followsGiven || 0}</p>
+                </div>
+                <div className="bg-gray-800 p-6 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-300 mb-2">Follows Received</h3>
+                    <p className="text-3xl font-bold text-blue-500">{stats?.followsReceived || 0}</p>
+                </div>
+                <div className="bg-gray-800 p-6 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-300 mb-2">Pending Follows</h3>
+                    <p className="text-3xl font-bold text-yellow-500">{stats?.pendingFollows || 0}</p>
+                </div>
+            </div>
+
+            {/* Request Follow Section */}
+            <div className="bg-gray-800 p-6 rounded-lg mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">Request Follows</h2>
+                <form onSubmit={handleRequestFollow} className="flex gap-4">
+                    <input
+                        type="text"
+                        value={instagramUsername}
+                        onChange={(e) => setInstagramUsername(e.target.value)}
+                        placeholder="Your Instagram username"
+                        className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                    >
+                        Request Follow
+                    </button>
+                </form>
+                {verificationCode && (
+                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
+                        <p className="text-white">
+                            Your verification code: <span className="font-mono font-bold text-purple-400">{verificationCode}</span>
+                        </p>
+                        <p className="text-gray-400 text-sm mt-2">
+                            Share this code with the person who follows you to verify the follow.
+                        </p>
+                    </div>
+                )}
+            </div>
 
             {/* Follow Queue Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold mb-4">Users to Follow</h2>
+            <div className="bg-gray-800 p-6 rounded-lg">
+                <h2 className="text-2xl font-bold text-white mb-4">Follow Queue</h2>
                 {followQueue.length === 0 ? (
-                    <p className="text-gray-600">No users available to follow right now. Check back soon!</p>
+                    <p className="text-gray-400">No pending follows in the queue.</p>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {followQueue.map((user) => (
-                            <div key={user._id} className="border rounded-lg p-4">
-                                <p className="font-semibold mb-2">@{user.instagramUsername}</p>
-                                <p className="text-sm text-gray-600 mb-2">Points: {user.points}</p>
-                                <button
-                                    onClick={() => recordFollow(user.userId, user.instagramUsername)}
-                                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                                >
-                                    Follow
-                                </button>
+                    <div className="space-y-4">
+                        {followQueue.map((follow) => (
+                            <div key={follow._id} className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
+                                <div>
+                                    <p className="text-white font-semibold">@{follow.targetUsername}</p>
+                                    <p className="text-gray-400 text-sm">Requested by: {follow.follower.username}</p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter verification code"
+                                        className="px-4 py-2 bg-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        onChange={(e) => setVerificationCode(e.target.value)}
+                                    />
+                                    <button
+                                        onClick={() => handleVerifyFollow(follow._id, verificationCode)}
+                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                    >
+                                        Verify
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

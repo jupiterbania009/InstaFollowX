@@ -6,6 +6,8 @@ services:
     buildCommand: npm install
     startCommand: npm run start-server
     staticPublishPath: ./client
+    healthCheckPath: /health
+    numInstances: 1
     envVars:
       - key: MONGODB_URI
         value: "mongodb+srv://jupiter009:%4077861822AaRohanBania009@cluster0.kie5d8x.mongodb.net/instafollowx?retryWrites=true&w=majority"
@@ -17,3 +19,10 @@ services:
         value: "gflbbmfxkholkavz"
       - key: PORT
         value: 10000
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
+    disk:
+      name: tmp
+      mountPath: /tmp
+      sizeGB: 1

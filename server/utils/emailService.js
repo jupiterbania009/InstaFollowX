@@ -2,18 +2,33 @@ const nodemailer = require('nodemailer');
 
 // Create a transporter using Gmail
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        user: process.env.EMAIL_USER?.trim(),
+        pass: process.env.EMAIL_PASSWORD?.trim()
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
 // Function to send OTP email
 const sendOTPEmail = async (email, otp) => {
     try {
+        // Log email configuration (without password)
+        console.log('Attempting to send email using:', {
+            host: 'smtp.gmail.com',
+            port: 587,
+            user: process.env.EMAIL_USER
+        });
+
+        // Verify transporter configuration
+        await transporter.verify();
+        
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: `"InstaFollowX" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Your InstaFollowX Login OTP',
             html: `
@@ -33,7 +48,8 @@ const sendOTPEmail = async (email, otp) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.response);
         return true;
     } catch (error) {
         console.error('Email sending error:', error);

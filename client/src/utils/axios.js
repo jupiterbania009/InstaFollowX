@@ -18,12 +18,12 @@ instance.interceptors.request.use(
     }
 );
 
-// Add a response interceptor
+// Add a response interceptor to handle errors
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Clear token and redirect to login if unauthorized
+            // Token expired or invalid
             localStorage.removeItem('token');
             window.location.href = '/login';
         }

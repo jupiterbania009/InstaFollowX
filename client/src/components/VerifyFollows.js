@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const VerifyFollows = () => {
     const [followQueue, setFollowQueue] = useState([]);
@@ -15,7 +15,7 @@ const VerifyFollows = () => {
 
     const fetchFollowQueue = async () => {
         try {
-            const response = await axios.get('/api/follow/queue');
+            const response = await axios.get('/follow/queue');
             setFollowQueue(response.data);
             setError(null);
         } catch (err) {
@@ -33,7 +33,7 @@ const VerifyFollows = () => {
         setSuccessMessage('');
 
         try {
-            const response = await axios.post('/api/follow/request', {
+            const response = await axios.post('/follow/request', {
                 instagramUsername
             });
             setSuccessMessage(`Follow requested! Your verification code is: ${response.data.verificationCode}`);
@@ -53,7 +53,7 @@ const VerifyFollows = () => {
         setSuccessMessage('');
 
         try {
-            await axios.post('/api/follow/verify', {
+            await axios.post('/follow/verify', {
                 followId,
                 verificationCode
             });

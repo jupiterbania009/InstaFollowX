@@ -1,12 +1,10 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL: process.env.NODE_ENV === 'production'
-        ? 'https://instafollowx-api.onrender.com'
-        : 'http://localhost:10000'
+    baseURL: '/api'
 });
 
-// Add a request interceptor
+// Add a request interceptor to include the auth token
 instance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');

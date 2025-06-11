@@ -5,8 +5,8 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: cd server && npm install
-    startCommand: cd server && node server.js
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -24,13 +24,12 @@ services:
     autoDeploy: true
 
   # Frontend static site
-  - type: web
+  - type: static
     name: instafollowx-web
     env: static
     region: singapore
-    plan: free
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: ./client/build
+    buildCommand: npm install && npm run build
+    publishPath: build
     envVars:
       - key: NODE_ENV
         value: production

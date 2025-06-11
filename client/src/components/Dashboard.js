@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -11,7 +11,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await axios.get('/api/follow/stats');
+                const response = await axios.get('/follow/stats');
                 setStats(response.data);
                 setError(null);
             } catch (err) {

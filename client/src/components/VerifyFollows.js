@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
+import { useAuth } from '../context/AuthContext';
 
 const VerifyFollows = () => {
+    const { user } = useAuth();
     const [followQueue, setFollowQueue] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [verificationCode, setVerificationCode] = useState('');
     const [instagramUsername, setInstagramUsername] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [points, setPoints] = useState(0);
 
     useEffect(() => {
         fetchFollowQueue();
+        fetchPoints();
     }, []);
+
+    const fetchPoints = async () => {
+        try {
+            const response = await axios.get('/follow/stats');
+            setPoints(response.data.points);
+        } catch (err) {
+            console.error('Error fetching points:', err);
+        }
+    };
 
     const fetchFollowQueue = async () => {
         try {
@@ -36,9 +49,9 @@ const VerifyFollows = () => {
             const response = await axios.post('/follow/request', {
                 instagramUsername
             });
-            setSuccessMessage(`Follow requested! Your verification code is: ${response.data.verificationCode}`);
+            setSuccessMessage(`Follow requested! Your verification code is: ${response.data.verificationCode}. Share this code with the person who follows you.`);
             setInstagramUsername('');
-            await fetchFollowQueue();
+            await Promise.all([fetchFollowQueue(), fetchPoints()]);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to request follow');
             console.error('Error requesting follow:', err);
@@ -57,9 +70,9 @@ const VerifyFollows = () => {
                 followId,
                 verificationCode
             });
-            setSuccessMessage('Follow verified successfully!');
+            setSuccessMessage('Follow verified successfully! You earned 2 points!');
             setVerificationCode('');
-            await fetchFollowQueue();
+            await Promise.all([fetchFollowQueue(), fetchPoints()]);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to verify follow');
             console.error('Error verifying follow:', err);
@@ -91,7 +104,23 @@ const VerifyFollows = () => {
             )}
 
             <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">Request Follow</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-white">Request Follow</h2>
+                    <div className="text-purple-400">
+                        Available Points: <span className="font-bold">{points}</span>
+                    </div>
+                </div>
+                
+                <div className="bg-gray-700 p-4 rounded mb-4">
+                    <h3 className="text-white font-semibold mb-2">How it works:</h3>
+                    <ul className="text-gray-300 list-disc list-inside space-y-1">
+                        <li>Each follow request costs 1 point</li>
+                        <li>You earn 2 points when someone verifies your follow</li>
+                        <li>Share your verification code with the person who follows you</li>
+                        <li>They'll use the code to verify the follow</li>
+                    </ul>
+                </div>
+
                 <form onSubmit={handleRequestFollow} className="space-y-4">
                     <div>
                         <label htmlFor="instagramUsername" className="block text-gray-300 mb-1">
@@ -109,14 +138,14 @@ const VerifyFollows = () => {
                             />
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isLoading || points < 1}
                                 className={`px-6 py-2 rounded font-semibold ${
-                                    isLoading
-                                        ? 'bg-purple-700 cursor-not-allowed'
+                                    isLoading || points < 1
+                                        ? 'bg-gray-600 cursor-not-allowed'
                                         : 'bg-purple-600 hover:bg-purple-700'
                                 } text-white transition-colors`}
                             >
-                                Request Follow
+                                {points < 1 ? 'Not enough points' : 'Request Follow'}
                             </button>
                         </div>
                     </div>
@@ -152,14 +181,14 @@ const VerifyFollows = () => {
                                     />
                                     <button
                                         onClick={() => handleVerifyFollow(follow._id)}
-                                        disabled={isLoading}
+                                        disabled={isLoading || !verificationCode}
                                         className={`px-4 py-2 rounded ${
-                                            isLoading
-                                                ? 'bg-green-700 cursor-not-allowed'
+                                            isLoading || !verificationCode
+                                                ? 'bg-gray-600 cursor-not-allowed'
                                                 : 'bg-green-600 hover:bg-green-700'
                                         } text-white transition-colors`}
                                     >
-                                        Verify
+                                        Verify (+2 points)
                                     </button>
                                 </div>
                             </div>

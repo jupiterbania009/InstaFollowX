@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    baseURL: process.env.NODE_ENV === 'production'
+        ? 'https://instafollowx-api.onrender.com'
+        : 'http://localhost:10000'
 });
 
 // Add a request interceptor

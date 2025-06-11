@@ -1,11 +1,11 @@
 services:
-  # Backend API service
+  # Combined Frontend and Backend Service
   - type: web
-    name: instafollowx-api
+    name: instafollowx
     env: node
     region: singapore
     plan: free
-    buildCommand: npm install
+    buildCommand: npm run install-deps && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV

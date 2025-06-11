@@ -1,65 +1,81 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navigation = () => {
-    const navigate = useNavigate();
-    const { isAuthenticated, logout, user } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
+    const location = useLocation();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-    };
+    const isActive = (path) => location.pathname === path;
 
     return (
-        <nav className="bg-gray-800 py-4">
-            <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link to="/" className="flex items-center">
-                    <img src="/logo.png" alt="InstaFollowX" className="h-8 w-8 mr-2" />
-                    <span className="text-2xl font-bold text-purple-500">InstaFollowX</span>
-                </Link>
+        <nav className="bg-gray-800 shadow-lg">
+            <div className="container mx-auto px-4">
+                <div className="flex justify-between items-center h-16">
+                    <div className="flex items-center">
+                        <Link to="/" className="text-white text-xl font-bold">
+                            InstaFollowX
+                        </Link>
+                    </div>
 
-                <div className="flex items-center space-x-4">
-                    {isAuthenticated ? (
-                        <>
-                            <span className="text-gray-300">
-                                Welcome, {user?.username || 'User'}
-                            </span>
-                            <Link 
-                                to="/dashboard" 
-                                className="text-white hover:text-purple-400"
-                            >
-                                Dashboard
-                            </Link>
-                            <Link 
-                                to="/verify-follows" 
-                                className="text-white hover:text-purple-400"
-                            >
-                                Verify Follows
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                            >
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link 
-                                to="/login" 
-                                className="text-white hover:text-purple-400"
-                            >
-                                Login
-                            </Link>
-                            <Link 
-                                to="/register" 
-                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                            >
-                                Register
-                            </Link>
-                        </>
-                    )}
+                    <div className="flex items-center space-x-4">
+                        {isAuthenticated ? (
+                            <>
+                                <Link
+                                    to="/dashboard"
+                                    className={`text-sm ${
+                                        isActive('/dashboard')
+                                            ? 'text-purple-400'
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    to="/verify-follows"
+                                    className={`text-sm ${
+                                        isActive('/verify-follows')
+                                            ? 'text-purple-400'
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    Verify Follows
+                                </Link>
+                                <span className="text-gray-300 text-sm">
+                                    {user?.username}
+                                </span>
+                                <button
+                                    onClick={logout}
+                                    className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition-colors"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className={`text-sm ${
+                                        isActive('/login')
+                                            ? 'text-purple-400'
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/register"
+                                    className={`text-sm ${
+                                        isActive('/register')
+                                            ? 'text-purple-400'
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </nav>

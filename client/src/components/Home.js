@@ -1,66 +1,46 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
-    const navigate = useNavigate();
-
     return (
-        <div className="max-w-4xl mx-auto text-center py-16">
-            <h1 className="text-5xl font-bold text-white mb-8">
-                Grow Your Instagram Following
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] text-white">
+            <h1 className="text-4xl md:text-6xl font-bold text-center mb-6">
+                Welcome to <span className="text-purple-500">InstaFollowX</span>
             </h1>
-            
-            <p className="text-xl text-gray-300 mb-12">
-                Exchange follows with real users and grow your Instagram presence. 
-                Earn points for following others and get followers in return!
+            <p className="text-lg md:text-xl text-gray-300 text-center max-w-2xl mb-8">
+                Manage your Instagram followers efficiently with our advanced tools and analytics.
             </p>
-
-            <div className="space-y-4">
-                <button
-                    onClick={() => navigate('/login')}
-                    className="px-8 py-4 bg-purple-600 text-white rounded-lg text-xl font-semibold hover:bg-purple-700 transition-colors"
+            <div className="flex gap-4">
+                <Link
+                    to="/register"
+                    className="bg-purple-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-purple-700 transition-colors"
                 >
-                    Get Started Now
-                </button>
+                    Get Started
+                </Link>
+                <Link
+                    to="/login"
+                    className="bg-gray-700 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-600 transition-colors"
+                >
+                    Login
+                </Link>
             </div>
-
-            <div className="mt-4">
-                <p className="text-gray-400">
-                    Already have an account?{' '}
-                    <button
-                        onClick={() => navigate('/login')}
-                        className="text-purple-500 hover:text-purple-400 font-medium"
-                    >
-                        Login here
-                    </button>
-                </p>
-            </div>
-            
-            <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl">
                 <div className="bg-gray-800 p-6 rounded-lg">
-                    <h3 className="text-xl font-bold text-white mb-4">
-                        Follow Exchange
-                    </h3>
-                    <p className="text-gray-300">
-                        Exchange follows with other Instagram users to grow your audience organically.
+                    <h3 className="text-xl font-semibold mb-3">Track Followers</h3>
+                    <p className="text-gray-400">
+                        Monitor your follower growth and identify unfollowers in real-time.
                     </p>
                 </div>
-                
                 <div className="bg-gray-800 p-6 rounded-lg">
-                    <h3 className="text-xl font-bold text-white mb-4">
-                        Real Engagement
-                    </h3>
-                    <p className="text-gray-300">
-                        Connect with real users who are interested in similar content.
+                    <h3 className="text-xl font-semibold mb-3">Verify Follows</h3>
+                    <p className="text-gray-400">
+                        Ensure your follow-for-follow interactions are genuine and reciprocated.
                     </p>
                 </div>
-                
                 <div className="bg-gray-800 p-6 rounded-lg">
-                    <h3 className="text-xl font-bold text-white mb-4">
-                        Track Progress
-                    </h3>
-                    <p className="text-gray-300">
-                        Monitor your growth and manage your follow exchanges in one place.
+                    <h3 className="text-xl font-semibold mb-3">Analytics</h3>
+                    <p className="text-gray-400">
+                        Get detailed insights about your follower engagement and growth patterns.
                     </p>
                 </div>
             </div>

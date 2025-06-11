@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     },
     points: {
         type: Number,
-        default: 0
+        default: 5  // Start with 5 points
     },
     isVerified: {
         type: Boolean,
@@ -55,6 +55,26 @@ userSchema.pre('save', async function(next) {
 // Method to check password
 userSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Method to add points
+userSchema.methods.addPoints = async function(amount) {
+    this.points += amount;
+    return this.save();
+};
+
+// Method to deduct points
+userSchema.methods.deductPoints = async function(amount) {
+    if (this.points < amount) {
+        throw new Error('Insufficient points');
+    }
+    this.points -= amount;
+    return this.save();
+};
+
+// Method to check if user has enough points
+userSchema.methods.hasEnoughPoints = function(amount) {
+    return this.points >= amount;
 };
 
 module.exports = mongoose.model('User', userSchema); 
